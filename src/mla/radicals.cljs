@@ -69,9 +69,13 @@
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
   )
 
-(defn start []
+(defn reload []
+  (js/console.log "Reloading...")
   (mount-components)
-  (js/console.log "Starting..."))
+  )
+(defn start []
+  (js/console.log "Starting...")
+  (mount-components))
 
 (defn stop []
   (js/console.log "Stopping..."))
@@ -79,3 +83,5 @@
 (defn init []
   (js/console.log "Initializing...")
   (start))
+
+(init)
