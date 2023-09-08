@@ -42,15 +42,34 @@
 (defn create-flashcard [radical]
 
   (h/div
-   :class "radical"
+   :class "flashcard radical"
    [(h/h1
      [(h/span :class "simplified" (first (:simplified radical)))
       (h/span :class "traditional" (first (:traditional radical)))])
     (h/p :class "pyniyn" (. js/PinyinConverter convert (:pyniyn radical)))
-    ;; (meaning->component (:meaning radical))
     (h/p :class "meaning" (meaning->hoplon-elm (:meaning radical)))
     (h/p :class "variants" (:variants radical))
     (h/p :class "comment" (:comment radical))]))
+
+(defn canvas [holder]
+  (let [canvas (create-element "canvas")]
+    (gdom/appendChild holder canvas)
+    canvas)
+  )
+
+(def c (canvas (get-app-element)))
+
+(defn text->img [canvas txt]
+  (let [ctx (gdom/getCanvasContext2D canvas)
+        dim (ctx/measureText txt)]
+    (set! (.-width canvas) (.-width dim))
+    (set! (.-font ctx) "16px serif")
+    (.fillText ctx txt, 0, 32)
+    (.toDataURL canvas)))
+
+(defn same-chars [canvas s t]
+  (= (text->img canvas s) (text->img canvas t)))
+
 
 (defn create-flashcards [^web/Element holder]
   (let [elm (-> (create-element "div")
