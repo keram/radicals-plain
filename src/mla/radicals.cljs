@@ -5,8 +5,7 @@
    [hoplon.core  :as h]
    [hoplon.goog]
    [mla.csv :as csv]
-   [mla.dom-utils :refer [log reset-content create-element add-class remove-class]]
-   ))
+   [mla.dom-utils :refer [log reset-content create-element add-class remove-class]]))
 
 (defn multiply [a b] (* a b))
 
@@ -15,7 +14,7 @@
 (defn meaning->component [meaning]
   (let [words (map str/trim (str/split meaning ","))]
     [:p.meaning
-     (interpose ^{:key (str "br" (rand-int 1000))}[:br]
+     (interpose ^{:key (str "br" (rand-int 1000))} [:br]
                 (concat
                  [^{:key (str "w" (rand-int 1000))}
                   [:span.main (first words)]]
@@ -41,19 +40,18 @@
   (gdom/getElement "app"))
 
 (defn create-flashcard [radical]
-  (h/div :class "radical" "a card")
-  )
+  (h/div :class "radical" "a card"))
 
 (defn create-flashcards [^web/Element holder]
   (let [elm (-> (create-element "div")
-                (add-class "flashcards")
-                )]
-    (.appendChild elm (gdom/createTextNode "foo"))
-    (.appendChild holder elm)))
+                (add-class "flashcards"))]
+    (.replaceChildren elm (create-flashcard e))))
 
 (defn mount-components []
-  (.replaceChildren (.getElementById js/document "app")
-    (create-flashcard "x")))
+  (.forEach ^web/NodeList (.querySelectorAll js/document ".flashcards-holder")
+            (fn [holder]
+              (reset-content holder)
+              (create-flashcards holder))))
 
 ;; (.forEach ^web/NodeList (.querySelectorAll js/document ".flashcards-holder")
 ;;           (fn [elm]
@@ -71,8 +69,7 @@
 
 (defn reload []
   (js/console.log "Reloading...")
-  (mount-components)
-  )
+  (mount-components))
 (defn start []
   (js/console.log "Starting...")
   (mount-components))
