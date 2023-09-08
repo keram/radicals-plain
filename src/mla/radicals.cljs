@@ -2,9 +2,11 @@
   (:require
    [clojure.string :as str]
    [goog.dom :as gdom]
-   [mla.csv :as csv]))
-
-(println "This -t-")
+   [hoplon.core  :as h]
+   [hoplon.goog]
+   [mla.csv :as csv]
+   [mla.dom-utils :refer [log reset-content create-element add-class remove-class]]
+   ))
 
 (defn multiply [a b] (* a b))
 
@@ -33,15 +35,47 @@
    [:p.comment (:comment radical)]])
 
 ;; define your app data so that it doesn't get over-written on reload
-(defonce app-state (atom {:text "Hello world!"}))
+(defonce app-state (atom {}))
 
 (defn get-app-element []
   (gdom/getElement "app"))
 
+(defn create-flashcard [radical]
+  (h/div :class "radical" "a card")
+  )
+
+(defn create-flashcards [^web/Element holder]
+  (let [elm (-> (create-element "div")
+                (add-class "flashcards")
+                )]
+    (.appendChild elm (gdom/createTextNode "foo"))
+    (.appendChild holder elm)))
+
+(defn mount-components []
+  (.replaceChildren (.getElementById js/document "app")
+    (create-flashcard "x")))
+
+;; (.forEach ^web/NodeList (.querySelectorAll js/document ".flashcards-holder")
+;;           (fn [elm]
+;;             (reset-content elm)
+;;             (create-flashcards elm)
+;;             ))
+;; (set! (.-innerHTML elm) "-t- aaaxxx")
 
 ;; specify reload hook with ^:after-load metadata
 (defn ^:after-load on-reload []
   ;; optionally touch your app-state to force rerendering depending on
   ;; your application
   ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+  )
+
+(defn start []
+  (mount-components)
+  (js/console.log "Starting..."))
+
+(defn stop []
+  (js/console.log "Stopping..."))
+
+(defn init []
+  (js/console.log "Initializing...")
+  (start))
