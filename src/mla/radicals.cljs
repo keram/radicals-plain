@@ -10,28 +10,17 @@
 (defn multiply [a b] (* a b))
 
 (def radicals (csv/parse csv/sample))
+(def radical (first radicals))
 
-(defn meaning->component [meaning]
+(defn meaning->hoplon-elm [meaning]
   (let [words (map str/trim (str/split meaning ","))]
-    [:p.meaning
-     (interpose ^{:key (str "br" (rand-int 1000))} [:br]
-                (concat
-                 [^{:key (str "w" (rand-int 1000))}
-                  [:span.main (first words)]]
-                 (map
-                  (fn [word]
-                    ^{:key word} [:span.alternative word])
-                  (rest words))))]))
-
-(defn radical-component [radical]
-  [:div.radical
-   [:h1
-    [:span.simplified (first (:simplified radical))]
-    [:span.traditional (first (:traditional radical))]]
-   [:p.pyniyn (. js/PinyinConverter convert (:pyniyn radical))]
-   (meaning->component (:meaning radical))
-   [:p.variants (:variants radical)]
-   [:p.comment (:comment radical)]])
+    (interpose (h/br)
+                          (cons
+                           (h/span :class "main" (first words))
+                           (map (fn [word]
+                                  (h/span :class "alternative" word))
+                                (rest words))))
+    ))
 
 ;; define your app data so that it doesn't get over-written on reload
 (defonce app-state (atom {}))
@@ -40,12 +29,26 @@
   (gdom/getElement "app"))
 
 (defn create-flashcard [radical]
-  (h/div :class "radical" "a card"))
+  (h/div (meaning->hoplon-elm (:meaning radical)))
+  ;; (h/div
+  ;;  :class "radical"
+  ;;  [(h/h1
+  ;;    [(h/span :class "simplified" (first (:simplified radical)))
+  ;;     (h/span :class "traditional" (first (:traditional radical)))])
+  ;;   (h/p :class "pyniyn" (. js/PinyinConverter convert (:pyniyn radical)))
+  ;;   ;; (meaning->component (:meaning radical))
+  ;;   (h/p :class "meaning" (meaning->hoplon-elm (:meaning radical)))
+  ;;   (h/p :class "variants" (:variants radical))
+  ;;   (h/p :class "comment" (:comment radical))
+  ;;   ]
+  ;;  )
+  )
+
 
 (defn create-flashcards [^web/Element holder]
   (let [elm (-> (create-element "div")
                 (add-class "flashcards"))]
-    (.replaceChildren elm (create-flashcard e))))
+    (.replaceChildren holder (create-flashcard (first radicals)))))
 
 (defn mount-components []
   (.forEach ^web/NodeList (.querySelectorAll js/document ".flashcards-holder")
@@ -53,23 +56,10 @@
               (reset-content holder)
               (create-flashcards holder))))
 
-;; (.forEach ^web/NodeList (.querySelectorAll js/document ".flashcards-holder")
-;;           (fn [elm]
-;;             (reset-content elm)
-;;             (create-flashcards elm)
-;;             ))
-;; (set! (.-innerHTML elm) "-t- aaaxxx")
-
-;; specify reload hook with ^:after-load metadata
-(defn ^:after-load on-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-  )
-
 (defn reload []
   (js/console.log "Reloading...")
   (mount-components))
+
 (defn start []
   (js/console.log "Starting...")
   (mount-components))
@@ -82,3 +72,7 @@
   (start))
 
 (init)
+
+;; specify reload hook with ^:after-load metadata
+(defn ^:after-load on-reload []
+  (reload))
