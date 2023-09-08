@@ -12,14 +12,25 @@
 (def radicals (csv/parse csv/sample))
 (def radical (first radicals))
 
+(defn h-interpose [sep coll]
+  (map (fn [f] (f))
+       (interpose
+        sep (map (fn [e] (fn [] e)) coll))))
+
 (defn meaning->hoplon-elm [meaning]
   (let [words (map str/trim (str/split meaning ","))]
-    (interpose (h/br)
-                          (cons
-                           (h/span :class "main" (first words))
-                           (map (fn [word]
-                                  (h/span :class "alternative" word))
-                                (rest words))))
+    (h-interpose h/br
+                 (cons
+                  (h/span :class "main" (first words))
+                  (map (fn [word]
+                         (h/span :class "alternative" word))
+                       (rest words))))
+    ;; (interpose h/br
+    ;;            (cons
+    ;;             (h/span :class "main" (first words))
+    ;;             (map (fn [word]
+    ;;                    (h/span :class "alternative" word))
+    ;;                  (rest words))))
     ))
 
 ;; define your app data so that it doesn't get over-written on reload
@@ -29,21 +40,17 @@
   (gdom/getElement "app"))
 
 (defn create-flashcard [radical]
-  (h/div (meaning->hoplon-elm (:meaning radical)))
-  ;; (h/div
-  ;;  :class "radical"
-  ;;  [(h/h1
-  ;;    [(h/span :class "simplified" (first (:simplified radical)))
-  ;;     (h/span :class "traditional" (first (:traditional radical)))])
-  ;;   (h/p :class "pyniyn" (. js/PinyinConverter convert (:pyniyn radical)))
-  ;;   ;; (meaning->component (:meaning radical))
-  ;;   (h/p :class "meaning" (meaning->hoplon-elm (:meaning radical)))
-  ;;   (h/p :class "variants" (:variants radical))
-  ;;   (h/p :class "comment" (:comment radical))
-  ;;   ]
-  ;;  )
-  )
 
+  (h/div
+   :class "radical"
+   [(h/h1
+     [(h/span :class "simplified" (first (:simplified radical)))
+      (h/span :class "traditional" (first (:traditional radical)))])
+    (h/p :class "pyniyn" (. js/PinyinConverter convert (:pyniyn radical)))
+    ;; (meaning->component (:meaning radical))
+    (h/p :class "meaning" (meaning->hoplon-elm (:meaning radical)))
+    (h/p :class "variants" (:variants radical))
+    (h/p :class "comment" (:comment radical))]))
 
 (defn create-flashcards [^web/Element holder]
   (let [elm (-> (create-element "div")
